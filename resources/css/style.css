@@ -15,10 +15,6 @@ body {
 	padding: 150px;
 }
 
-hr {
-	background-color: #EEE;
-}
-
 /* Titles */
 h1, h2, h3, h4, h5, h6 {
     font-family: "Raleway";
@@ -51,36 +47,28 @@ p {
 
 /* Links */
 a {
-    color: #f85c37;
+    color: #7b7b7b;
     word-wrap: break-word;
 	transition: color 0.1s, background 0.1s;
 }
 
 a:hover,
 a:focus {
-    color: #7b7b7b;
+    color: #BCB897;
     text-decoration: none;
     outline: 0;
+    transition: color 0.2s;
 }
 
-a:before,
-a:after {
-    -webkit-transition: color 0.1s ease-in, background 0.1s ease-in;
-    -moz-transition: color 0.1s ease-in, background 0.1s ease-in;
-    -ms-transition: color 0.1s ease-in, background 0.1s ease-in;
-    -o-transition: color 0.1s ease-in, background 0.1s ease-in;
-    transition: color 0.1s ease-in, background 0.1s ease-in;
-}
-
- hr {
+hr {
     display: block;
     height: 1px;
     border: 0;
     border-top: 1px solid #ccc;
     margin: 1em 0;
     padding: 0;
+	background-color: #EEE;
 }
-
 
 /*---------------------------------------------------
 	3.1 Topbar
@@ -161,14 +149,24 @@ a:after {
 ---------------------------------------------------*/
 
 /* Header  */
+
+.header {
+        background: url("../images/Simplon-2-1.jpg") no-repeat center center;
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
 .headerwrap {
 	background: url(../img/SoundWave9.png) no-repeat center top;
 	margin-top: -1px;
-	padding-top:140px;
+	padding-top: 40vh;
 	text-align:center;
 	background-attachment: relative;
 	background-position: center center;
-	min-height: 500px;
+	min-height: 100vh;
 	width: 100%;
 	
     -webkit-background-size: 100%;
