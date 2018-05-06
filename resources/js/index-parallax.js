@@ -4,19 +4,23 @@ var s = skrollr.init()
 
 var vid = $('.droneVideo');
 var scrollRatio = 0;
+var vidXPositionScreenRatio = vid.position().top;
 // console.log(vid)
 $(window).scroll(function(){
-	console.log($(window).scrollTop())
-	scrollRatio = ($(window).scrollTop()-250)/100;
+	// console.log($(window).scrollTop())
+	var vidXPositionScreenRatio = vid.position().top*0.8;
+	scrollRatio = ($(window).scrollTop()-vidXPositionScreenRatio)/75;
 });
+// console.log(3270-335+75)
 setInterval(function(){
 	// if(vid[0].currentTime < scrollRatio-0.25){
+	console.log()
+	vid[0].currentTime-=(vid[0].currentTime-scrollRatio)/16;
 
-	vid[0].currentTime-=(vid[0].currentTime-scrollRatio-0.05)/20;
 	// }else if(vid[0].currentTime > scrollRatio){
 	// }else if(vid[0].currentTime > scrollRatio){
 	// 	vid[0].currentTime-=0.05;
 	// }else{
 	// 	vid[0].pause();
 	// }
-}, 100);
+}, 75);
