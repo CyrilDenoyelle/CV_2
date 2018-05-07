@@ -159,12 +159,11 @@ hr {
     justify-content: center;
     align-items: center;
 }
-
 .headerwrap {
 	background: url(../img/SoundWave9.png) no-repeat center top;
 	margin-top: -1px;
 	padding-top: 40vh;
-	text-align:center;
+	text-align: center;
 	background-attachment: relative;
 	background-position: center center;
 	min-height: 100vh;
@@ -179,6 +178,11 @@ hr {
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
+}
+
+.headerwrapContent {
+	position: absolute;
+	left: 20vw;
 }
 
 #footerwrap {
@@ -301,26 +305,24 @@ sm {
 }
 
 /*------------
-	PARALLAX     (start)
+	droneVideo   (start)
   ------------*/
-
 .containerVid{
-   display: flex;
-   width:100%; /*container-width*/
-   overflow:hidden; /*hide bounds of image */
-   margin:0;   /*reset margin of figure tag*/
-   margin-bottom:-18px;
-   margin-top:-19px;
-   /*padding-top:15px;*/
+	display: flex;
+	width:100%;
+	overflow:hidden;
+	margin:0;
+	margin-bottom:-18px;
+	margin-top:-19px;
 
-   background-size: cover;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+	background-size: cover;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
 }
 .droneVideo{
-   margin:-10% 0;
-   background-size: cover;
+	margin:-10% 0;
+	background-size: cover;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -330,7 +332,3 @@ sm {
 .droneVideo{
 	height: 105vh;
 }
-
-/*------------
-	PARALLAX      (end)
-  ------------*/
