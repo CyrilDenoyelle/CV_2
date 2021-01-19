@@ -127,20 +127,20 @@ hr {
   border-left: 1px solid #222;
 }
 
-	#section-topbar ul#nav a:hover {
-	  background: #222;
-	  text-decoration: none;
-	  border-left: 1px solid #111;
-	}
+#section-topbar ul#nav a:hover {
+	background: #222;
+	text-decoration: none;
+	border-left: 1px solid #111;
+}
 
-	#section-topbar ul#nav .active a {
-		background: #44bbaa;
-		border-left: 1px solid #111;
-	}
+#section-topbar ul#nav .active a {
+	background: #44bbaa;
+	border-left: 1px solid #111;
+}
 
-		#section-topbar ul#nav .active a:hover {
-			background: #44bbaa;
-		}
+#section-topbar ul#nav .active a:hover {
+	background: #44bbaa;
+}
 #section-topbar i {
 	font-size: 25px;
 }
@@ -259,6 +259,14 @@ hr {
 	padding-right: 8px;
 	color: #1abc9c;
 }
+
+/* Copyright Wrap */
+
+.skills {
+	display: flex;
+	align-content: space-around;
+}
+
 
 /* Copyright Wrap */
 
