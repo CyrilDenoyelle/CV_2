@@ -5,18 +5,18 @@
  *
  * Free to use under terms of MIT license
  */
-(function(window, document, undefined) {
+(function (window, document, undefined) {
 	'use strict';
 
 	/*
 	 * Global api.
 	 */
 	var skrollr = {
-		get: function() {
+		get: function () {
 			return _instance;
 		},
 		//Main entry point.
-		init: function(options) {
+		init: function (options) {
 			return _instance || new Skrollr(options);
 		},
 		VERSION: '0.6.26'
@@ -73,7 +73,7 @@
 	var rxPropEasing = /^(@?[a-z\-]+)\[(\w+)\]$/;
 
 	var rxCamelCase = /-([a-z0-9_])/g;
-	var rxCamelCaseFn = function(str, letter) {
+	var rxCamelCaseFn = function (str, letter) {
 		return letter.toUpperCase();
 	};
 
@@ -94,29 +94,29 @@
 	var theDashedCSSPrefix = '';
 
 	//Will be called once (when skrollr gets initialized).
-	var detectCSSPrefix = function() {
+	var detectCSSPrefix = function () {
 		//Only relevant prefixes. May be extended.
 		//Could be dangerous if there will ever be a CSS property which actually starts with "ms". Don't hope so.
 		var rxPrefixes = /^(?:O|Moz|webkit|ms)|(?:-(?:o|moz|webkit|ms)-)/;
 
 		//Detect prefix for current browser by finding the first property using a prefix.
-		if(!getStyle) {
+		if (!getStyle) {
 			return;
 		}
 
 		var style = getStyle(body, null);
 
-		for(var k in style) {
+		for (var k in style) {
 			//We check the key and if the key is a number, we check the value as well, because safari's getComputedStyle returns some weird array-like thingy.
 			theCSSPrefix = (k.match(rxPrefixes) || (+k == k && style[k].match(rxPrefixes)));
 
-			if(theCSSPrefix) {
+			if (theCSSPrefix) {
 				break;
 			}
 		}
 
 		//Did we even detect a prefix?
-		if(!theCSSPrefix) {
+		if (!theCSSPrefix) {
 			theCSSPrefix = theDashedCSSPrefix = '';
 
 			return;
@@ -125,7 +125,7 @@
 		theCSSPrefix = theCSSPrefix[0];
 
 		//We could have detected either a dashed prefix or this camelCaseish-inconsistent stuff.
-		if(theCSSPrefix.slice(0,1) === '-') {
+		if (theCSSPrefix.slice(0, 1) === '-') {
 			theDashedCSSPrefix = theCSSPrefix;
 
 			//There's no logic behind these. Need a look up.
@@ -140,18 +140,18 @@
 		}
 	};
 
-	var polyfillRAF = function() {
+	var polyfillRAF = function () {
 		var requestAnimFrame = window.requestAnimationFrame || window[theCSSPrefix.toLowerCase() + 'RequestAnimationFrame'];
 
 		var lastTime = _now();
 
-		if(_isMobile || !requestAnimFrame) {
-			requestAnimFrame = function(callback) {
+		if (_isMobile || !requestAnimFrame) {
+			requestAnimFrame = function (callback) {
 				//How long did it take to render?
 				var deltaTime = _now() - lastTime;
 				var delay = Math.max(0, 1000 / 60 - deltaTime);
 
-				return window.setTimeout(function() {
+				return window.setTimeout(function () {
 					lastTime = _now();
 					callback();
 				}, delay);
@@ -161,11 +161,11 @@
 		return requestAnimFrame;
 	};
 
-	var polyfillCAF = function() {
+	var polyfillCAF = function () {
 		var cancelAnimFrame = window.cancelAnimationFrame || window[theCSSPrefix.toLowerCase() + 'CancelAnimationFrame'];
 
-		if(_isMobile || !cancelAnimFrame) {
-			cancelAnimFrame = function(timeout) {
+		if (_isMobile || !cancelAnimFrame) {
+			cancelAnimFrame = function (timeout) {
 				return window.clearTimeout(timeout);
 			};
 		}
@@ -175,41 +175,41 @@
 
 	//Built-in easing functions.
 	var easings = {
-		begin: function() {
+		begin: function () {
 			return 0;
 		},
-		end: function() {
+		end: function () {
 			return 1;
 		},
-		linear: function(p) {
+		linear: function (p) {
 			return p;
 		},
-		quadratic: function(p) {
+		quadratic: function (p) {
 			return p * p;
 		},
-		cubic: function(p) {
+		cubic: function (p) {
 			return p * p * p;
 		},
-		swing: function(p) {
+		swing: function (p) {
 			return (-Math.cos(p * Math.PI) / 2) + 0.5;
 		},
-		sqrt: function(p) {
+		sqrt: function (p) {
 			return Math.sqrt(p);
 		},
-		outCubic: function(p) {
+		outCubic: function (p) {
 			return (Math.pow((p - 1), 3) + 1);
 		},
 		//see https://www.desmos.com/calculator/tbr20s8vd2 for how I did this
-		bounce: function(p) {
+		bounce: function (p) {
 			var a;
 
-			if(p <= 0.5083) {
+			if (p <= 0.5083) {
 				a = 3;
-			} else if(p <= 0.8489) {
+			} else if (p <= 0.8489) {
 				a = 9;
-			} else if(p <= 0.96208) {
+			} else if (p <= 0.96208) {
 				a = 27;
-			} else if(p <= 0.99981) {
+			} else if (p <= 0.99981) {
 				a = 91;
 			} else {
 				return 1;
@@ -235,8 +235,8 @@
 		_constants = options.constants || {};
 
 		//We allow defining custom easings or overwrite existing.
-		if(options.easing) {
-			for(var e in options.easing) {
+		if (options.easing) {
+			for (var e in options.easing) {
 				easings[e] = options.easing[e];
 			}
 		}
@@ -257,7 +257,7 @@
 		//forceHeight is true by default
 		_forceHeight = options.forceHeight !== false;
 
-		if(_forceHeight) {
+		if (_forceHeight) {
 			_scale = options.scale || 1;
 		}
 
@@ -272,15 +272,15 @@
 		};
 
 		//A custom check function may be passed.
-		_isMobile = ((options.mobileCheck || function() {
+		_isMobile = ((options.mobileCheck || function () {
 			return (/Android|iPhone|iPad|iPod|BlackBerry/i).test(navigator.userAgent || navigator.vendor || window.opera);
 		})());
 
-		if(_isMobile) {
+		if (_isMobile) {
 			_skrollrBody = document.getElementById('skrollr-body');
 
 			//Detect 3d transform if there's a skrollr-body (only needed for #skrollr-body).
-			if(_skrollrBody) {
+			if (_skrollrBody) {
 				_detect3DTransforms();
 			}
 
@@ -293,12 +293,12 @@
 		//Triggers parsing of elements and a first reflow.
 		_instance.refresh();
 
-		_addEvent(window, 'resize orientationchange', function() {
+		_addEvent(window, 'resize orientationchange', function () {
 			var width = documentElement.clientWidth;
 			var height = documentElement.clientHeight;
 
 			//Only reflow if the size actually changed (#271).
-			if(height !== _lastViewportHeight || width !== _lastViewportWidth) {
+			if (height !== _lastViewportHeight || width !== _lastViewportWidth) {
 				_lastViewportHeight = height;
 				_lastViewportWidth = width;
 
@@ -309,7 +309,7 @@
 		var requestAnimFrame = polyfillRAF();
 
 		//Let's go.
-		(function animloop(){
+		(function animloop() {
 			_render();
 			_animFrame = requestAnimFrame(animloop);
 		}());
@@ -320,13 +320,13 @@
 	/**
 	 * (Re)parses some or all elements.
 	 */
-	Skrollr.prototype.refresh = function(elements) {
+	Skrollr.prototype.refresh = function (elements) {
 		var elementIndex;
 		var elementsLength;
 		var ignoreID = false;
 
 		//Completely reparse anything without argument.
-		if(elements === undefined) {
+		if (elements === undefined) {
 			//Ignore that some elements may already have a skrollable ID.
 			ignoreID = true;
 
@@ -334,7 +334,7 @@
 			_skrollableIdCounter = 0;
 
 			elements = document.getElementsByTagName('*');
-		} else if(elements.length === undefined) {
+		} else if (elements.length === undefined) {
 			//We also accept a single element as parameter.
 			elements = [elements];
 		}
@@ -342,7 +342,7 @@
 		elementIndex = 0;
 		elementsLength = elements.length;
 
-		for(; elementIndex < elementsLength; elementIndex++) {
+		for (; elementIndex < elementsLength; elementIndex++) {
 			var el = elements[elementIndex];
 			var anchorTarget = el;
 			var keyFrames = [];
@@ -357,11 +357,11 @@
 			var emitEvents = false;
 
 			//If we're reseting the counter, remove any old element ids that may be hanging around.
-			if(ignoreID && SKROLLABLE_ID_DOM_PROPERTY in el) {
+			if (ignoreID && SKROLLABLE_ID_DOM_PROPERTY in el) {
 				delete el[SKROLLABLE_ID_DOM_PROPERTY];
 			}
 
-			if(!el.attributes) {
+			if (!el.attributes) {
 				continue;
 			}
 
@@ -372,10 +372,10 @@
 			for (; attributeIndex < attributesLength; attributeIndex++) {
 				var attr = el.attributes[attributeIndex];
 
-				if(attr.name === 'data-anchor-target') {
+				if (attr.name === 'data-anchor-target') {
 					anchorTarget = document.querySelector(attr.value);
 
-					if(anchorTarget === null) {
+					if (anchorTarget === null) {
 						throw 'Unable to find anchor target "' + attr.value + '"';
 					}
 
@@ -383,21 +383,21 @@
 				}
 
 				//Global smooth scrolling can be overridden by the element attribute.
-				if(attr.name === 'data-smooth-scrolling') {
+				if (attr.name === 'data-smooth-scrolling') {
 					smoothScrollThis = attr.value !== 'off';
 
 					continue;
 				}
 
 				//Global edge strategy can be overridden by the element attribute.
-				if(attr.name === 'data-edge-strategy') {
+				if (attr.name === 'data-edge-strategy') {
 					edgeStrategy = attr.value;
 
 					continue;
 				}
 
 				//Is this element tagged with the `data-emit-events` attribute?
-				if(attr.name === 'data-emit-events') {
+				if (attr.name === 'data-emit-events') {
 					emitEvents = true;
 
 					continue;
@@ -405,7 +405,7 @@
 
 				var match = attr.name.match(rxKeyframeAttribute);
 
-				if(match === null) {
+				if (match === null) {
 					continue;
 				}
 
@@ -421,7 +421,7 @@
 
 				var constant = match[1];
 
-				if(constant) {
+				if (constant) {
 					//Strip the underscore prefix.
 					kf.constant = constant.substr(1);
 				}
@@ -430,7 +430,7 @@
 				var offset = match[2];
 
 				//Is it a percentage offset?
-				if(/p$/.test(offset)) {
+				if (/p$/.test(offset)) {
 					kf.isPercentage = true;
 					kf.offset = (offset.slice(0, -1) | 0) / 100;
 				} else {
@@ -443,13 +443,13 @@
 				var anchor2 = match[4] || anchor1;
 
 				//"absolute" (or "classic") mode, where numbers mean absolute scroll offset.
-				if(!anchor1 || anchor1 === ANCHOR_START || anchor1 === ANCHOR_END) {
+				if (!anchor1 || anchor1 === ANCHOR_START || anchor1 === ANCHOR_END) {
 					kf.mode = 'absolute';
 
 					//data-end needs to be calculated after all key frames are known.
-					if(anchor1 === ANCHOR_END) {
+					if (anchor1 === ANCHOR_END) {
 						kf.isEnd = true;
-					} else if(!kf.isPercentage) {
+					} else if (!kf.isPercentage) {
 						//For data-start we can already set the key frame w/o calculations.
 						//#59: "scale" options should only affect absolute mode.
 						kf.offset = kf.offset * _scale;
@@ -463,7 +463,7 @@
 			}
 
 			//Does this element have key frames?
-			if(!keyFrames.length) {
+			if (!keyFrames.length) {
 				continue;
 			}
 
@@ -472,7 +472,7 @@
 
 			var id;
 
-			if(!ignoreID && SKROLLABLE_ID_DOM_PROPERTY in el) {
+			if (!ignoreID && SKROLLABLE_ID_DOM_PROPERTY in el) {
 				//We already have this element under control. Grab the corresponding skrollable id.
 				id = el[SKROLLABLE_ID_DOM_PROPERTY];
 				styleAttr = _skrollables[id].styleAttr;
@@ -506,10 +506,10 @@
 		elementIndex = 0;
 		elementsLength = elements.length;
 
-		for(; elementIndex < elementsLength; elementIndex++) {
+		for (; elementIndex < elementsLength; elementIndex++) {
 			var sk = _skrollables[elements[elementIndex][SKROLLABLE_ID_DOM_PROPERTY]];
 
-			if(sk === undefined) {
+			if (sk === undefined) {
 				continue;
 			}
 
@@ -527,7 +527,7 @@
 	 * Transform "relative" mode to "absolute" mode.
 	 * That is, calculate anchor position and offset of element.
 	 */
-	Skrollr.prototype.relativeToAbsolute = function(element, viewportAnchor, elementAnchor) {
+	Skrollr.prototype.relativeToAbsolute = function (element, viewportAnchor, elementAnchor) {
 		var viewportHeight = documentElement.clientHeight;
 		var box = element.getBoundingClientRect();
 		var absolute = box.top;
@@ -535,15 +535,15 @@
 		//#100: IE doesn't supply "height" with getBoundingClientRect.
 		var boxHeight = box.bottom - box.top;
 
-		if(viewportAnchor === ANCHOR_BOTTOM) {
+		if (viewportAnchor === ANCHOR_BOTTOM) {
 			absolute -= viewportHeight;
-		} else if(viewportAnchor === ANCHOR_CENTER) {
+		} else if (viewportAnchor === ANCHOR_CENTER) {
 			absolute -= viewportHeight / 2;
 		}
 
-		if(elementAnchor === ANCHOR_BOTTOM) {
+		if (elementAnchor === ANCHOR_BOTTOM) {
 			absolute += boxHeight;
-		} else if(elementAnchor === ANCHOR_CENTER) {
+		} else if (elementAnchor === ANCHOR_CENTER) {
 			absolute += boxHeight / 2;
 		}
 
@@ -556,7 +556,7 @@
 	/**
 	 * Animates scroll top to new position.
 	 */
-	Skrollr.prototype.animateTo = function(top, options) {
+	Skrollr.prototype.animateTo = function (top, options) {
 		options = options || {};
 
 		var now = _now();
@@ -575,8 +575,8 @@
 		};
 
 		//Don't queue the animation if there's nothing to animate.
-		if(!_scrollAnimation.topDiff) {
-			if(_scrollAnimation.done) {
+		if (!_scrollAnimation.topDiff) {
+			if (_scrollAnimation.done) {
 				_scrollAnimation.done.call(_instance, false);
 			}
 
@@ -589,8 +589,8 @@
 	/**
 	 * Stops animateTo animation.
 	 */
-	Skrollr.prototype.stopAnimateTo = function() {
-		if(_scrollAnimation && _scrollAnimation.done) {
+	Skrollr.prototype.stopAnimateTo = function () {
+		if (_scrollAnimation && _scrollAnimation.done) {
 			_scrollAnimation.done.call(_instance, true);
 		}
 
@@ -600,18 +600,18 @@
 	/**
 	 * Returns if an animation caused by animateTo is currently running.
 	 */
-	Skrollr.prototype.isAnimatingTo = function() {
+	Skrollr.prototype.isAnimatingTo = function () {
 		return !!_scrollAnimation;
 	};
 
-	Skrollr.prototype.isMobile = function() {
+	Skrollr.prototype.isMobile = function () {
 		return _isMobile;
 	};
 
-	Skrollr.prototype.setScrollTop = function(top, force) {
+	Skrollr.prototype.setScrollTop = function (top, force) {
 		_forceRender = (force === true);
 
-		if(_isMobile) {
+		if (_isMobile) {
 			_mobileOffset = Math.min(Math.max(top, 0), _maxKeyFrame);
 		} else {
 			window.scrollTo(0, top);
@@ -620,31 +620,31 @@
 		return _instance;
 	};
 
-	Skrollr.prototype.getScrollTop = function() {
-		if(_isMobile) {
+	Skrollr.prototype.getScrollTop = function () {
+		if (_isMobile) {
 			return _mobileOffset;
 		} else {
 			return window.pageYOffset || documentElement.scrollTop || body.scrollTop || 0;
 		}
 	};
 
-	Skrollr.prototype.getMaxScrollTop = function() {
+	Skrollr.prototype.getMaxScrollTop = function () {
 		return _maxKeyFrame;
 	};
 
-	Skrollr.prototype.on = function(name, fn) {
+	Skrollr.prototype.on = function (name, fn) {
 		_listeners[name] = fn;
 
 		return _instance;
 	};
 
-	Skrollr.prototype.off = function(name) {
+	Skrollr.prototype.off = function (name) {
 		delete _listeners[name];
 
 		return _instance;
 	};
 
-	Skrollr.prototype.destroy = function() {
+	Skrollr.prototype.destroy = function () {
 		var cancelAnimFrame = polyfillCAF();
 		cancelAnimFrame(_animFrame);
 		_removeAllEvents();
@@ -654,14 +654,14 @@
 		var skrollableIndex = 0;
 		var skrollablesLength = _skrollables.length;
 
-		for(; skrollableIndex < skrollablesLength; skrollableIndex++) {
+		for (; skrollableIndex < skrollablesLength; skrollableIndex++) {
 			_reset(_skrollables[skrollableIndex].element);
 		}
 
 		documentElement.style.overflow = body.style.overflow = '';
 		documentElement.style.height = body.style.height = '';
 
-		if(_skrollrBody) {
+		if (_skrollrBody) {
 			skrollr.setStyle(_skrollrBody, 'transform', 'none');
 		}
 
@@ -694,7 +694,7 @@
 		Private methods.
 	*/
 
-	var _initMobile = function() {
+	var _initMobile = function () {
 		var initialElement;
 		var initialTouchY;
 		var initialTouchX;
@@ -709,13 +709,13 @@
 		var lastTouchTime;
 		var deltaTime;
 
-		_addEvent(documentElement, [EVENT_TOUCHSTART, EVENT_TOUCHMOVE, EVENT_TOUCHCANCEL, EVENT_TOUCHEND].join(' '), function(e) {
+		_addEvent(documentElement, [EVENT_TOUCHSTART, EVENT_TOUCHMOVE, EVENT_TOUCHCANCEL, EVENT_TOUCHEND].join(' '), function (e) {
 			var touch = e.changedTouches[0];
 
 			currentElement = e.target;
 
 			//We don't want text nodes.
-			while(currentElement.nodeType === 3) {
+			while (currentElement.nodeType === 3) {
 				currentElement = currentElement.parentNode;
 			}
 
@@ -723,14 +723,14 @@
 			currentTouchX = touch.clientX;
 			currentTouchTime = e.timeStamp;
 
-			if(!rxTouchIgnoreTags.test(currentElement.tagName)) {
+			if (!rxTouchIgnoreTags.test(currentElement.tagName)) {
 				e.preventDefault();
 			}
 
-			switch(e.type) {
+			switch (e.type) {
 				case EVENT_TOUCHSTART:
 					//The last element we tapped on.
-					if(initialElement) {
+					if (initialElement) {
 						initialElement.blur();
 					}
 
@@ -745,7 +745,7 @@
 					break;
 				case EVENT_TOUCHMOVE:
 					//Prevent default event on touchIgnore elements in case they don't have focus yet.
-					if(rxTouchIgnoreTags.test(currentElement.tagName) && document.activeElement !== currentElement) {
+					if (rxTouchIgnoreTags.test(currentElement.tagName) && document.activeElement !== currentElement) {
 						e.preventDefault();
 					}
 
@@ -765,8 +765,8 @@
 					var distance2 = distanceX * distanceX + distanceY * distanceY;
 
 					//Check if it was more like a tap (moved less than 7px).
-					if(distance2 < 49) {
-						if(!rxTouchIgnoreTags.test(initialElement.tagName)) {
+					if (distance2 < 49) {
+						if (!rxTouchIgnoreTags.test(initialElement.tagName)) {
 							initialElement.focus();
 
 							//It was a tap, click the element.
@@ -793,11 +793,11 @@
 					var targetRatio = 0;
 
 					//Change duration proportionally when scrolling would leave bounds.
-					if(targetTop > _maxKeyFrame) {
+					if (targetTop > _maxKeyFrame) {
 						targetRatio = (_maxKeyFrame - targetTop) / targetOffset;
 
 						targetTop = _maxKeyFrame;
-					} else if(targetTop < 0) {
+					} else if (targetTop < 0) {
 						targetRatio = -targetTop / targetOffset;
 
 						targetTop = 0;
@@ -805,7 +805,7 @@
 
 					duration = duration * (1 - targetRatio);
 
-					_instance.animateTo((targetTop + 0.5) | 0, {easing: 'outCubic', duration: duration});
+					_instance.animateTo((targetTop + 0.5) | 0, { easing: 'outCubic', duration: duration });
 					break;
 			}
 		});
@@ -820,7 +820,7 @@
 	 * That is "end" in "absolute" mode and all key frames in "relative" mode.
 	 * Also handles constants, because they may change on resize.
 	 */
-	var _updateDependentKeyFrames = function() {
+	var _updateDependentKeyFrames = function () {
 		var viewportHeight = documentElement.clientHeight;
 		var processedConstants = _processConstants();
 		var skrollable;
@@ -839,7 +839,7 @@
 		skrollableIndex = 0;
 		skrollablesLength = _skrollables.length;
 
-		for(; skrollableIndex < skrollablesLength; skrollableIndex++) {
+		for (; skrollableIndex < skrollablesLength; skrollableIndex++) {
 			skrollable = _skrollables[skrollableIndex];
 			element = skrollable.element;
 			anchorTarget = skrollable.anchorTarget;
@@ -848,7 +848,7 @@
 			keyFrameIndex = 0;
 			keyFramesLength = keyFrames.length;
 
-			for(; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
+			for (; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
 				kf = keyFrames[keyFrameIndex];
 
 				offset = kf.offset;
@@ -856,7 +856,7 @@
 
 				kf.frame = offset;
 
-				if(kf.isPercentage) {
+				if (kf.isPercentage) {
 					//Convert the offset to percentage of the viewport height.
 					offset = offset * viewportHeight;
 
@@ -864,7 +864,7 @@
 					kf.frame = offset;
 				}
 
-				if(kf.mode === 'relative') {
+				if (kf.mode === 'relative') {
 					_reset(element);
 
 					kf.frame = _instance.relativeToAbsolute(anchorTarget, kf.anchors[0], kf.anchors[1]) - offset;
@@ -875,9 +875,9 @@
 				kf.frame += constantValue;
 
 				//Only search for max key frame when forceHeight is enabled.
-				if(_forceHeight) {
+				if (_forceHeight) {
 					//Find the max key frame, but don't use one of the data-end ones for comparison.
-					if(!kf.isEnd && kf.frame > _maxKeyFrame) {
+					if (!kf.isEnd && kf.frame > _maxKeyFrame) {
 						_maxKeyFrame = kf.frame;
 					}
 				}
@@ -891,19 +891,19 @@
 		skrollableIndex = 0;
 		skrollablesLength = _skrollables.length;
 
-		for(; skrollableIndex < skrollablesLength; skrollableIndex++) {
+		for (; skrollableIndex < skrollablesLength; skrollableIndex++) {
 			skrollable = _skrollables[skrollableIndex];
 			keyFrames = skrollable.keyFrames;
 
 			keyFrameIndex = 0;
 			keyFramesLength = keyFrames.length;
 
-			for(; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
+			for (; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
 				kf = keyFrames[keyFrameIndex];
 
 				constantValue = processedConstants[kf.constant] || 0;
 
-				if(kf.isEnd) {
+				if (kf.isEnd) {
 					kf.frame = _maxKeyFrame - kf.offset + constantValue;
 				}
 			}
@@ -917,12 +917,12 @@
 	 * @param fakeFrame The frame to render at when smooth scrolling is enabled.
 	 * @param actualFrame The actual frame we are at.
 	 */
-	var _calcSteps = function(fakeFrame, actualFrame) {
+	var _calcSteps = function (fakeFrame, actualFrame) {
 		//Iterate over all skrollables.
 		var skrollableIndex = 0;
 		var skrollablesLength = _skrollables.length;
 
-		for(; skrollableIndex < skrollablesLength; skrollableIndex++) {
+		for (; skrollableIndex < skrollablesLength; skrollableIndex++) {
 			var skrollable = _skrollables[skrollableIndex];
 			var element = skrollable.element;
 			var frame = skrollable.smoothScrolling ? fakeFrame : actualFrame;
@@ -939,19 +939,19 @@
 			var value;
 
 			//If we are before/after the first/last frame, set the styles according to the given edge strategy.
-			if(beforeFirst || afterLast) {
+			if (beforeFirst || afterLast) {
 				//Check if we already handled this edge case last time.
 				//Note: using setScrollTop it's possible that we jumped from one edge to the other.
-				if(beforeFirst && skrollable.edge === -1 || afterLast && skrollable.edge === 1) {
+				if (beforeFirst && skrollable.edge === -1 || afterLast && skrollable.edge === 1) {
 					continue;
 				}
 
 				//Add the skrollr-before or -after class.
-				if(beforeFirst) {
+				if (beforeFirst) {
 					_updateClass(element, [SKROLLABLE_BEFORE_CLASS], [SKROLLABLE_AFTER_CLASS, SKROLLABLE_BETWEEN_CLASS]);
 
 					//This handles the special case where we exit the first keyframe.
-					if(emitEvents && lastFrameIndex > -1) {
+					if (emitEvents && lastFrameIndex > -1) {
 						_emitEvent(element, firstFrame.eventType, _direction);
 						skrollable.lastFrameIndex = -1;
 					}
@@ -959,7 +959,7 @@
 					_updateClass(element, [SKROLLABLE_AFTER_CLASS], [SKROLLABLE_BEFORE_CLASS, SKROLLABLE_BETWEEN_CLASS]);
 
 					//This handles the special case where we exit the last keyframe.
-					if(emitEvents && lastFrameIndex < framesLength) {
+					if (emitEvents && lastFrameIndex < framesLength) {
 						_emitEvent(element, lastFrame.eventType, _direction);
 						skrollable.lastFrameIndex = framesLength;
 					}
@@ -968,7 +968,7 @@
 				//Remember that we handled the edge case (before/after the first/last keyframe).
 				skrollable.edge = beforeFirst ? -1 : 1;
 
-				switch(skrollable.edgeStrategy) {
+				switch (skrollable.edgeStrategy) {
 					case 'reset':
 						_reset(element);
 						continue;
@@ -980,12 +980,12 @@
 					case 'set':
 						var props = firstOrLastFrame.props;
 
-						for(key in props) {
-							if(hasProp.call(props, key)) {
+						for (key in props) {
+							if (hasProp.call(props, key)) {
 								value = _interpolateString(props[key].value);
 
 								//Set style or attribute.
-								if(key.indexOf('@') === 0) {
+								if (key.indexOf('@') === 0) {
 									element.setAttribute(key.substr(1), value);
 								} else {
 									skrollr.setStyle(element, key, value);
@@ -997,7 +997,7 @@
 				}
 			} else {
 				//Did we handle an edge last time?
-				if(skrollable.edge !== 0) {
+				if (skrollable.edge !== 0) {
 					_updateClass(element, [SKROLLABLE_CLASS, SKROLLABLE_BETWEEN_CLASS], [SKROLLABLE_BEFORE_CLASS, SKROLLABLE_AFTER_CLASS]);
 					skrollable.edge = 0;
 				}
@@ -1006,13 +1006,13 @@
 			//Find out between which two key frames we are right now.
 			var keyFrameIndex = 0;
 
-			for(; keyFrameIndex < framesLength - 1; keyFrameIndex++) {
-				if(frame >= frames[keyFrameIndex].frame && frame <= frames[keyFrameIndex + 1].frame) {
+			for (; keyFrameIndex < framesLength - 1; keyFrameIndex++) {
+				if (frame >= frames[keyFrameIndex].frame && frame <= frames[keyFrameIndex + 1].frame) {
 					var left = frames[keyFrameIndex];
 					var right = frames[keyFrameIndex + 1];
 
-					for(key in left.props) {
-						if(hasProp.call(left.props, key)) {
+					for (key in left.props) {
+						if (hasProp.call(left.props, key)) {
 							var progress = (frame - left.frame) / (right.frame - left.frame);
 
 							//Transform the current progress using the given easing function.
@@ -1024,7 +1024,7 @@
 							value = _interpolateString(value);
 
 							//Set style or attribute.
-							if(key.indexOf('@') === 0) {
+							if (key.indexOf('@') === 0) {
 								element.setAttribute(key.substr(1), value);
 							} else {
 								skrollr.setStyle(element, key, value);
@@ -1035,10 +1035,10 @@
 					//Are events enabled on this element?
 					//This code handles the usual cases of scrolling through different keyframes.
 					//The special cases of before first and after last keyframe are handled above.
-					if(emitEvents) {
+					if (emitEvents) {
 						//Did we pass a new keyframe?
-						if(lastFrameIndex !== keyFrameIndex) {
-							if(_direction === 'down') {
+						if (lastFrameIndex !== keyFrameIndex) {
+							if (_direction === 'down') {
 								_emitEvent(element, left.eventType, _direction);
 							} else {
 								_emitEvent(element, right.eventType, _direction);
@@ -1057,8 +1057,8 @@
 	/**
 	 * Renders all elements.
 	 */
-	var _render = function() {
-		if(_requestReflow) {
+	var _render = function () {
+		if (_requestReflow) {
 			_requestReflow = false;
 			_reflow();
 		}
@@ -1072,9 +1072,9 @@
 		var progress;
 
 		//Before actually rendering handle the scroll animation, if any.
-		if(_scrollAnimation) {
+		if (_scrollAnimation) {
 			//It's over
-			if(now >= _scrollAnimation.endTime) {
+			if (now >= _scrollAnimation.endTime) {
 				renderTop = _scrollAnimation.targetTop;
 				afterAnimationCallback = _scrollAnimation.done;
 				_scrollAnimation = undefined;
@@ -1088,11 +1088,11 @@
 			_instance.setScrollTop(renderTop, true);
 		}
 		//Smooth scrolling only if there's no animation running and if we're not forcing the rendering.
-		else if(!_forceRender) {
+		else if (!_forceRender) {
 			var smoothScrollingDiff = _smoothScrolling.targetTop - renderTop;
 
 			//The user scrolled, start new smooth scrolling.
-			if(smoothScrollingDiff) {
+			if (smoothScrollingDiff) {
 				_smoothScrolling = {
 					startTop: _lastTop,
 					topDiff: renderTop - _lastTop,
@@ -1103,7 +1103,7 @@
 			}
 
 			//Interpolate the internal scroll position (not the actual scrollbar).
-			if(now <= _smoothScrolling.endTime) {
+			if (now <= _smoothScrolling.endTime) {
 				//Map the current progress to the new progress using easing function.
 				progress = easings.sqrt((now - _smoothScrolling.startTime) / _smoothScrollingDuration);
 
@@ -1112,13 +1112,13 @@
 		}
 
 		//That's were we actually "scroll" on mobile.
-		if(_isMobile && _skrollrBody) {
+		if (_isMobile && _skrollrBody) {
 			//Set the transform ("scroll it").
 			skrollr.setStyle(_skrollrBody, 'transform', 'translate(0, ' + -(_mobileOffset) + 'px) ' + _translateZ);
 		}
 
 		//Did the scroll position even change?
-		if(_forceRender || _lastTop !== renderTop) {
+		if (_forceRender || _lastTop !== renderTop) {
 			//Remember in which direction are we scrolling?
 			_direction = (renderTop > _lastTop) ? 'down' : (renderTop < _lastTop ? 'up' : _direction);
 
@@ -1135,19 +1135,19 @@
 			var continueRendering = _listeners.beforerender && _listeners.beforerender.call(_instance, listenerParams);
 
 			//The beforerender listener function is able the cancel rendering.
-			if(continueRendering !== false) {
+			if (continueRendering !== false) {
 				//Now actually interpolate all the styles.
 				_calcSteps(renderTop, _instance.getScrollTop());
 
 				//Remember when we last rendered.
 				_lastTop = renderTop;
 
-				if(_listeners.render) {
+				if (_listeners.render) {
 					_listeners.render.call(_instance, listenerParams);
 				}
 			}
 
-			if(afterAnimationCallback) {
+			if (afterAnimationCallback) {
 				afterAnimationCallback.call(_instance, false);
 			}
 		}
@@ -1158,12 +1158,12 @@
 	/**
 	 * Parses the properties for each key frame of the given skrollable.
 	 */
-	var _parseProps = function(skrollable) {
+	var _parseProps = function (skrollable) {
 		//Iterate over all key frames
 		var keyFrameIndex = 0;
 		var keyFramesLength = skrollable.keyFrames.length;
 
-		for(; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
+		for (; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
 			var frame = skrollable.keyFrames[keyFrameIndex];
 			var easing;
 			var value;
@@ -1172,14 +1172,14 @@
 
 			var match;
 
-			while((match = rxPropValue.exec(frame.props)) !== null) {
+			while ((match = rxPropValue.exec(frame.props)) !== null) {
 				prop = match[1];
 				value = match[2];
 
 				easing = prop.match(rxPropEasing);
 
 				//Is there an easing specified for this prop?
-				if(easing !== null) {
+				if (easing !== null) {
 					prop = easing[1];
 					easing = easing[2];
 				} else {
@@ -1209,30 +1209,30 @@
 	 * where the first element is the format string later used
 	 * and all following elements are the numeric value.
 	 */
-	var _parseProp = function(val) {
+	var _parseProp = function (val) {
 		var numbers = [];
 
 		//One special case, where floats don't work.
 		//We replace all occurences of rgba colors
 		//which don't use percentage notation with the percentage notation.
 		rxRGBAIntegerColor.lastIndex = 0;
-		val = val.replace(rxRGBAIntegerColor, function(rgba) {
-			return rgba.replace(rxNumericValue, function(n) {
+		val = val.replace(rxRGBAIntegerColor, function (rgba) {
+			return rgba.replace(rxNumericValue, function (n) {
 				return n / 255 * 100 + '%';
 			});
 		});
 
 		//Handle prefixing of "gradient" values.
 		//For now only the prefixed value will be set. Unprefixed isn't supported anyway.
-		if(theDashedCSSPrefix) {
+		if (theDashedCSSPrefix) {
 			rxGradient.lastIndex = 0;
-			val = val.replace(rxGradient, function(s) {
+			val = val.replace(rxGradient, function (s) {
 				return theDashedCSSPrefix + s;
 			});
 		}
 
 		//Now parse ANY number inside this string and create a format string.
-		val = val.replace(rxNumericValue, function(n) {
+		val = val.replace(rxNumericValue, function (n) {
 			numbers.push(+n);
 			return '{?}';
 		});
@@ -1250,7 +1250,7 @@
 	 *
 	 * @param sk A skrollable.
 	 */
-	var _fillProps = function(sk) {
+	var _fillProps = function (sk) {
 		//Will collect the properties key frame by key frame
 		var propList = {};
 		var keyFrameIndex;
@@ -1260,7 +1260,7 @@
 		keyFrameIndex = 0;
 		keyFramesLength = sk.keyFrames.length;
 
-		for(; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
+		for (; keyFrameIndex < keyFramesLength; keyFrameIndex++) {
 			_fillPropForFrame(sk.keyFrames[keyFrameIndex], propList);
 		}
 
@@ -1271,25 +1271,25 @@
 		//Iterate over all key frames from right to left
 		keyFrameIndex = sk.keyFrames.length - 1;
 
-		for(; keyFrameIndex >= 0; keyFrameIndex--) {
+		for (; keyFrameIndex >= 0; keyFrameIndex--) {
 			_fillPropForFrame(sk.keyFrames[keyFrameIndex], propList);
 		}
 	};
 
-	var _fillPropForFrame = function(frame, propList) {
+	var _fillPropForFrame = function (frame, propList) {
 		var key;
 
 		//For each key frame iterate over all right hand properties and assign them,
 		//but only if the current key frame doesn't have the property by itself
-		for(key in propList) {
+		for (key in propList) {
 			//The current frame misses this property, so assign it.
-			if(!hasProp.call(frame.props, key)) {
+			if (!hasProp.call(frame.props, key)) {
 				frame.props[key] = propList[key];
 			}
 		}
 
 		//Iterate over all props of the current frame and collect them
-		for(key in frame.props) {
+		for (key in frame.props) {
 			propList[key] = frame.props[key];
 		}
 	};
@@ -1297,12 +1297,12 @@
 	/**
 	 * Calculates the new values for two given values array.
 	 */
-	var _calcInterpolation = function(val1, val2, progress) {
+	var _calcInterpolation = function (val1, val2, progress) {
 		var valueIndex;
 		var val1Length = val1.length;
 
 		//They both need to have the same length
-		if(val1Length !== val2.length) {
+		if (val1Length !== val2.length) {
 			throw 'Can\'t interpolate between "' + val1[0] + '" and "' + val2[0] + '"';
 		}
 
@@ -1311,7 +1311,7 @@
 
 		valueIndex = 1;
 
-		for(; valueIndex < val1Length; valueIndex++) {
+		for (; valueIndex < val1Length; valueIndex++) {
 			//That's the line where the two numbers are actually interpolated.
 			interpolated[valueIndex] = val1[valueIndex] + ((val2[valueIndex] - val1[valueIndex]) * progress);
 		}
@@ -1322,12 +1322,12 @@
 	/**
 	 * Interpolates the numeric values into the format string.
 	 */
-	var _interpolateString = function(val) {
+	var _interpolateString = function (val) {
 		var valueIndex = 1;
 
 		rxInterpolateString.lastIndex = 0;
 
-		return val[0].replace(rxInterpolateString, function() {
+		return val[0].replace(rxInterpolateString, function () {
 			return val[valueIndex++];
 		});
 	};
@@ -1336,7 +1336,7 @@
 	 * Resets the class and style attribute to what it was before skrollr manipulated the element.
 	 * Also remembers the values it had before reseting, in order to undo the reset.
 	 */
-	var _reset = function(elements, undo) {
+	var _reset = function (elements, undo) {
 		//We accept a single element or an array of elements.
 		elements = [].concat(elements);
 
@@ -1345,16 +1345,16 @@
 		var elementsIndex = 0;
 		var elementsLength = elements.length;
 
-		for(; elementsIndex < elementsLength; elementsIndex++) {
+		for (; elementsIndex < elementsLength; elementsIndex++) {
 			element = elements[elementsIndex];
 			skrollable = _skrollables[element[SKROLLABLE_ID_DOM_PROPERTY]];
 
 			//Couldn't find the skrollable for this DOM element.
-			if(!skrollable) {
+			if (!skrollable) {
 				continue;
 			}
 
-			if(undo) {
+			if (undo) {
 				//Reset class and style to the "dirty" (set by skrollr) values.
 				element.style.cssText = skrollable.dirtyStyleAttr;
 				_updateClass(element, skrollable.dirtyClassAttr);
@@ -1373,7 +1373,7 @@
 	/**
 	 * Detects support for 3d transforms by applying it to the skrollr-body.
 	 */
-	var _detect3DTransforms = function() {
+	var _detect3DTransforms = function () {
 		_translateZ = 'translateZ(0)';
 		skrollr.setStyle(_skrollrBody, 'transform', _translateZ);
 
@@ -1382,7 +1382,7 @@
 		var computedTransformWithPrefix = computedStyle.getPropertyValue(theDashedCSSPrefix + 'transform');
 		var has3D = (computedTransform && computedTransform !== 'none') || (computedTransformWithPrefix && computedTransformWithPrefix !== 'none');
 
-		if(!has3D) {
+		if (!has3D) {
 			_translateZ = '';
 		}
 	};
@@ -1390,7 +1390,7 @@
 	/**
 	 * Set the CSS property on the given element. Sets prefixed properties as well.
 	 */
-	skrollr.setStyle = function(el, prop, val) {
+	skrollr.setStyle = function (el, prop, val) {
 		var style = el.style;
 
 		//Camel case.
@@ -1398,8 +1398,8 @@
 
 		//Make sure z-index gets a <integer>.
 		//This is the only <integer> case we need to handle.
-		if(prop === 'zIndex') {
-			if(isNaN(val)) {
+		if (prop === 'zIndex') {
+			if (isNaN(val)) {
 				//If it's not a number, don't touch it.
 				//It could for example be "auto" (#351).
 				style[prop] = val;
@@ -1409,37 +1409,37 @@
 			}
 		}
 		//#64: "float" can't be set across browsers. Needs to use "cssFloat" for all except IE.
-		else if(prop === 'float') {
+		else if (prop === 'float') {
 			style.styleFloat = style.cssFloat = val;
 		}
 		else {
 			//Need try-catch for old IE.
 			try {
 				//Set prefixed property if there's a prefix.
-				if(theCSSPrefix) {
-					style[theCSSPrefix + prop.slice(0,1).toUpperCase() + prop.slice(1)] = val;
+				if (theCSSPrefix) {
+					style[theCSSPrefix + prop.slice(0, 1).toUpperCase() + prop.slice(1)] = val;
 				}
 
 				//Set unprefixed.
 				style[prop] = val;
-			} catch(ignore) {}
+			} catch (ignore) { }
 		}
 	};
 
 	/**
 	 * Cross browser event handling.
 	 */
-	var _addEvent = skrollr.addEvent = function(element, names, callback) {
-		var intermediate = function(e) {
+	var _addEvent = skrollr.addEvent = function (element, names, callback) {
+		var intermediate = function (e) {
 			//Normalize IE event stuff.
 			e = e || window.event;
 
-			if(!e.target) {
+			if (!e.target) {
 				e.target = e.srcElement;
 			}
 
-			if(!e.preventDefault) {
-				e.preventDefault = function() {
+			if (!e.preventDefault) {
+				e.preventDefault = function () {
 					e.returnValue = false;
 					e.defaultPrevented = true;
 				};
@@ -1454,10 +1454,10 @@
 		var nameCounter = 0;
 		var namesLength = names.length;
 
-		for(; nameCounter < namesLength; nameCounter++) {
+		for (; nameCounter < namesLength; nameCounter++) {
 			name = names[nameCounter];
 
-			if(element.addEventListener) {
+			if (element.addEventListener) {
 				element.addEventListener(name, callback, false);
 			} else {
 				element.attachEvent('on' + name, intermediate);
@@ -1472,14 +1472,14 @@
 		}
 	};
 
-	var _removeEvent = skrollr.removeEvent = function(element, names, callback) {
+	var _removeEvent = skrollr.removeEvent = function (element, names, callback) {
 		names = names.split(' ');
 
 		var nameCounter = 0;
 		var namesLength = names.length;
 
-		for(; nameCounter < namesLength; nameCounter++) {
-			if(element.removeEventListener) {
+		for (; nameCounter < namesLength; nameCounter++) {
+			if (element.removeEventListener) {
 				element.removeEventListener(names[nameCounter], callback, false);
 			} else {
 				element.detachEvent('on' + names[nameCounter], callback);
@@ -1487,12 +1487,12 @@
 		}
 	};
 
-	var _removeAllEvents = function() {
+	var _removeAllEvents = function () {
 		var eventData;
 		var eventCounter = 0;
 		var eventsLength = _registeredEvents.length;
 
-		for(; eventCounter < eventsLength; eventCounter++) {
+		for (; eventCounter < eventsLength; eventCounter++) {
 			eventData = _registeredEvents[eventCounter];
 
 			_removeEvent(eventData.element, eventData.name, eventData.listener);
@@ -1501,32 +1501,32 @@
 		_registeredEvents = [];
 	};
 
-	var _emitEvent = function(element, name, direction) {
-		if(_listeners.keyframe) {
+	var _emitEvent = function (element, name, direction) {
+		if (_listeners.keyframe) {
 			_listeners.keyframe.call(_instance, element, name, direction);
 		}
 	};
 
-	var _reflow = function() {
+	var _reflow = function () {
 		var pos = _instance.getScrollTop();
 
 		//Will be recalculated by _updateDependentKeyFrames.
 		_maxKeyFrame = 0;
 
-		if(_forceHeight && !_isMobile) {
+		if (_forceHeight && !_isMobile) {
 			//un-"force" the height to not mess with the calculations in _updateDependentKeyFrames (#216).
 			body.style.height = '';
 		}
 
 		_updateDependentKeyFrames();
 
-		if(_forceHeight && !_isMobile) {
+		if (_forceHeight && !_isMobile) {
 			//"force" the height.
 			body.style.height = (_maxKeyFrame + documentElement.clientHeight) + 'px';
 		}
 
 		//The scroll offset may now be larger than needed (on desktop the browser/os prevents scrolling farther than the bottom).
-		if(_isMobile) {
+		if (_isMobile) {
 			_instance.setScrollTop(Math.min(_instance.getScrollTop(), _maxKeyFrame));
 		} else {
 			//Remember and reset the scroll pos (#217).
@@ -1539,20 +1539,20 @@
 	/*
 	 * Returns a copy of the constants object where all functions and strings have been evaluated.
 	 */
-	var _processConstants = function() {
+	var _processConstants = function () {
 		var viewportHeight = documentElement.clientHeight;
 		var copy = {};
 		var prop;
 		var value;
 
-		for(prop in _constants) {
+		for (prop in _constants) {
 			value = _constants[prop];
 
-			if(typeof value === 'function') {
+			if (typeof value === 'function') {
 				value = value.call(_instance);
 			}
 			//Percentage offset.
-			else if((/p$/).test(value)) {
+			else if ((/p$/).test(value)) {
 				value = (value.slice(0, -1) / 100) * viewportHeight;
 			}
 
@@ -1565,7 +1565,7 @@
 	/*
 	 * Returns the height of the document.
 	 */
-	var _getDocumentHeight = function() {
+	var _getDocumentHeight = function () {
 		var skrollrBodyHeight = (_skrollrBody && _skrollrBody.offsetHeight || 0);
 		var bodyHeight = Math.max(skrollrBodyHeight, body.scrollHeight, body.offsetHeight, documentElement.scrollHeight, documentElement.offsetHeight, documentElement.clientHeight);
 
@@ -1576,11 +1576,11 @@
 	 * Returns a string of space separated classnames for the current element.
 	 * Works with SVG as well.
 	 */
-	var _getClass = function(element) {
+	var _getClass = function (element) {
 		var prop = 'className';
 
 		//SVG support by using className.baseVal instead of just className.
-		if(window.SVGElement && element instanceof window.SVGElement) {
+		if (window.SVGElement && element instanceof window.SVGElement) {
 			element = element[prop];
 			prop = 'baseVal';
 		}
@@ -1594,17 +1594,17 @@
 	 * add and remove are arrays of strings,
 	 * or if remove is ommited add is a string and overwrites all classes.
 	 */
-	var _updateClass = function(element, add, remove) {
+	var _updateClass = function (element, add, remove) {
 		var prop = 'className';
 
 		//SVG support by using className.baseVal instead of just className.
-		if(window.SVGElement && element instanceof window.SVGElement) {
+		if (window.SVGElement && element instanceof window.SVGElement) {
 			element = element[prop];
 			prop = 'baseVal';
 		}
 
 		//When remove is ommited, we want to overwrite/set the classes.
-		if(remove === undefined) {
+		if (remove === undefined) {
 			element[prop] = add;
 			return;
 		}
@@ -1616,7 +1616,7 @@
 		var classRemoveIndex = 0;
 		var removeLength = remove.length;
 
-		for(; classRemoveIndex < removeLength; classRemoveIndex++) {
+		for (; classRemoveIndex < removeLength; classRemoveIndex++) {
 			val = _untrim(val).replace(_untrim(remove[classRemoveIndex]), ' ');
 		}
 
@@ -1626,9 +1626,9 @@
 		var classAddIndex = 0;
 		var addLength = add.length;
 
-		for(; classAddIndex < addLength; classAddIndex++) {
+		for (; classAddIndex < addLength; classAddIndex++) {
 			//Only add if el not already has class.
-			if(_untrim(val).indexOf(_untrim(add[classAddIndex])) === -1) {
+			if (_untrim(val).indexOf(_untrim(add[classAddIndex])) === -1) {
 				val += ' ' + add[classAddIndex];
 			}
 		}
@@ -1636,22 +1636,22 @@
 		element[prop] = _trim(val);
 	};
 
-	var _trim = function(a) {
+	var _trim = function (a) {
 		return a.replace(rxTrim, '');
 	};
 
 	/**
 	 * Adds a space before and after the string.
 	 */
-	var _untrim = function(a) {
+	var _untrim = function (a) {
 		return ' ' + a + ' ';
 	};
 
-	var _now = Date.now || function() {
+	var _now = Date.now || function () {
 		return +new Date();
 	};
 
-	var _keyFrameComparator = function(a, b) {
+	var _keyFrameComparator = function (a, b) {
 		return a.frame - b.frame;
 	};
 
@@ -1758,7 +1758,7 @@
 	var _animFrame;
 
 	//Expose skrollr as either a global variable or a require.js module
-	if(typeof define === 'function' && define.amd) {
+	if (typeof define === 'function' && define.amd) {
 		define('skrollr', function () {
 			return skrollr;
 		});
